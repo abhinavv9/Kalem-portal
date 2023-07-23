@@ -243,7 +243,7 @@ const callsStore = useCallsStore()
 const { calls } = storeToRefs(callsStore)
 // import { ArrowLongLeftIcon, ArrowLongRightIcon } from '@heroicons/vue/20/solid'
 
-import deleteCall from '../../components/callManagement/deleteCall.vue'
+import deleteCall from '../../components/callManagement/deleteCalls.vue'
 
 const currentPage = ref(1)
 const totalPages = computed(() => Math.ceil(calls._rawValue.total / calls._rawValue.per_page))
@@ -267,7 +267,7 @@ const pagesArray = computed(() => {
 
   return totalPagesArray
 })
-console.log('pagesArray', pagesArray.value)
+console.log(pagesArray)
 
 function goToPage(pageNumber) {
   if (pageNumber >= 1 && pageNumber <= totalPages.value) {
