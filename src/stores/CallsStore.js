@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { storeToRefs } from 'pinia'
 import axiosInstance from '../config.js'
@@ -6,7 +6,7 @@ import router from '../router/index.js'
 
 import { useAuthenticationStore } from '../stores/Authentication'
 const authenticationStore = useAuthenticationStore()
-const { token, flashMessage } = storeToRefs(authenticationStore)
+const { token } = storeToRefs(authenticationStore)
 
 export const useCallsStore = defineStore('calls', () => {
   const calls = ref({})
@@ -42,5 +42,24 @@ export const useCallsStore = defineStore('calls', () => {
       })
   }
 
-  return { calls, loading, get_calls }
+  function delete_call(id) {
+    return new Promise((resolve, reject) => {
+      axiosInstance
+        .delete('/api/call/' + id, {
+          headers: {
+            Authorization: 'Bearer ' + token.value
+          }
+        })
+        .then((res) => {
+          if (res.status == 204) {
+            resolve(res)
+          }
+        })
+        .catch((e) => {
+          reject(e)
+        })
+    })
+  }
+
+  return { calls, loading, get_calls, delete_call }
 })

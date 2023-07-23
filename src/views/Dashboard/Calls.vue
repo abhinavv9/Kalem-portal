@@ -1,3 +1,4 @@
+
 <template>
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
@@ -166,6 +167,15 @@
                     >Edit<span class="sr-only">, {{ call.call_id }}</span></a
                   >
                 </td>
+                <td
+                  :class="[
+                    index !== calls.data.length - 1 ? 'border-b border-gray-200' : '',
+                    'relative whitespace-nowrap py-4 pr-4 pl-3 text-right text-sm font-medium sm:pr-8 lg:pr-8'
+                  ]"
+                >
+                  <!-- Replace the Delete button with deleteCall component -->
+                  <deleteCall :call="call" @removed="onCallRemoved" />
+                </td>
               </tr>
             </tbody>
           </table>
@@ -174,92 +184,95 @@
     </div>
     <div>
       <nav class="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
-        <div class="-mt-px flex w-0 flex-1">
-          <a
-            v-if="calls.current_page != 1"
-            @click="callsStore.get_calls(calls.current_page - 1)"
-            href="#"
-            class="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+      <div class="hidden sm:block">
+        <p class="text-sm text-gray-700">
+          Showing
+          <span class="font-medium">{{ (currentPage - 1) * calls.per_page + 1 }}</span>
+          to
+          <span class="font-medium"
+            >{{
+              Math.min(currentPage * calls.per_page, calls.total)
+            }}</span
           >
-            <ArrowLongLeftIcon class="mr-3 h-5 w-5 text-gray-400" aria-hidden="true" />
-            Previous
-          </a>
-        </div>
-        <div class="hidden md:-mt-px md:flex">
-          <!-- <a
-            v-if="calls.data && calls.data.length"
-            v-for="(page, index) in Math.ceil(calls.total / calls.per_page)"
-            :key="index"
-            @click="callsStore.get_calls(index + 1)"
-            href="#"
+          of
+          <span class="font-medium">{{ calls.total }}</span>
+          results
+        </p>
+      </div>
+      <div class="flex items-center">
+        <div class="flex space-x-2">
+          <button
+            v-if="currentPage > 1"
+            class="w-11 px-2 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            @click="goToPage(currentPage - 1)"
+          >
+            Prev
+          </button>
+          <button
+            v-for="pageNumber in pagesArray"
+            :key="pageNumber"
             :class="[
-              calls.current_page === index + 1
-                ? 'inline-flex items-center border-t-2 border-indigo-500 px-4 pt-4 text-sm font-medium text-indigo-600'
-                : 'inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700'
+              'w-11 px-2 py-2 text-sm font-medium',
+              pageNumber === currentPage
+                ? 'text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                : 'text-gray-600 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500',
             ]"
-            >{{ index + 1 }}</a
-          > -->
-          <!-- Current: "border-indigo-500 text-indigo-600", Default: "border-transparent text-gray-500
-          hover:text-gray-700 hover:border-gray-300" -->
-          <!--
-          <a
-            href="#"
-            class="inline-flex items-center border-t-2 border-indigo-500 px-4 pt-4 text-sm font-medium text-indigo-600"
-            aria-current="page"
-            >2</a
+            @click="goToPage(pageNumber)"
           >
-          <a
-            href="#"
-            class="inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-            >3</a
-          >
-          <span
-            class="inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500"
-            >...</span
-          >
-          <a
-            href="#"
-            class="inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-            >8</a
-          >
-          <a
-            href="#"
-            class="inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-            >9</a
-          >
-          <a
-            href="#"
-            class="inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
-            >10</a
-          >
-          -->
-        </div>
-        <div class="-mt-px flex w-0 flex-1 justify-end">
-          <a
-            v-if="calls.current_page < Math.ceil(calls.total / calls.per_page)"
-            @click="callsStore.get_calls(calls.current_page + 1)"
-            href="#"
-            class="inline-flex items-center border-t-2 border-transparent pl-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            {{ pageNumber }}
+          </button>
+          <button
+            v-if="currentPage < totalPages"
+            class="w-11 px-2 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            @click="goToPage(currentPage + 1)"
           >
             Next
-            <ArrowLongRightIcon class="ml-3 h-5 w-5 text-gray-400" aria-hidden="true" />
-          </a>
+          </button>
         </div>
-      </nav>
+      </div>
+    </nav>
     </div>
   </div>
 </template>
 
 <script setup>
 import { storeToRefs } from 'pinia'
-import { onMounted, ref } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useCallsStore } from '../../stores/CallsStore'
 const callsStore = useCallsStore()
-const { loading, calls } = storeToRefs(callsStore)
-import { ArrowLongLeftIcon, ArrowLongRightIcon } from '@heroicons/vue/20/solid'
+const { calls } = storeToRefs(callsStore)
+// import { ArrowLongLeftIcon, ArrowLongRightIcon } from '@heroicons/vue/20/solid'
 
+import deleteCall from '../../components/callManagement/deleteCall.vue'
+
+const currentPage = ref(1)
+const totalPages = computed(() => Math.ceil(calls._rawValue.total / calls._rawValue.per_page))
 onMounted(() => {
   callsStore.get_calls(1)
   // v-for="(page, index) in Math.ceil(calls.total / calls.per_page)"
 })
+
+// Reload the table data after a call is removed
+const onCallRemoved = () => {
+  callsStore.get_calls(calls._rawValue.current_page)
+}
+const pagesArray = computed(() => {
+  const totalPagesArray = []
+  const startPage = Math.max(1, currentPage.value - 2)
+  const endPage = Math.min(totalPages.value, startPage + 4)
+
+  for (let i = startPage; i <= endPage; i++) {
+    totalPagesArray.push(i)
+  }
+
+  return totalPagesArray
+})
+console.log('pagesArray', pagesArray.value)
+
+function goToPage(pageNumber) {
+  if (pageNumber >= 1 && pageNumber <= totalPages.value) {
+    currentPage.value = pageNumber
+    callsStore.get_calls(pageNumber)
+  }
+}
 </script>
