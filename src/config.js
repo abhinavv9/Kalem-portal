@@ -5,7 +5,7 @@ export default axios.create({
   timeout: 15000,
   headers: {
     Accept: 'application/json',
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': 'https://fix-cors--dreamy-concha-0770da.netlify.app',
     'Content-Type': 'application/json'
     // Authorization: "Bearer "+ token,
   }
