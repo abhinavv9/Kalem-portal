@@ -11,15 +11,34 @@ const { token } = storeToRefs(authenticationStore)
 export const useCallsStore = defineStore('calls', () => {
   const calls = ref({})
   const loading = ref(false)
-
-  function get_calls(page = 1, limit = 20) {
+  function get_calls(data) {
     loading.value = true
     axiosInstance
-      .get('/api/call?page=' + page + '&limit=' + limit, {
-        headers: {
-          Authorization: 'Bearer ' + token.value
+      .get(
+        '/api/call' +
+          '?limit=' +
+          data.limit +
+          '&from=' +
+          data.from +
+          '&to=' +
+          data.to +
+          '&call_id=' +
+          data.call_id +
+          '&date_from=' +
+          data.date_from +
+          '&date_to=' +
+          data.date_to +
+          '&trashed=' +
+          data.trashed +
+          '&page=' +
+          data.page,
+
+        {
+          headers: {
+            Authorization: 'Bearer ' + token.value
+          }
         }
-      })
+      )
       .then((res) => {
         calls.value = res.data
       })
